@@ -5,7 +5,7 @@ import datetime
 import os
 from cryptography.fernet import Fernet
 from functools import wraps
-import secrets # For generating MFA code
+import secrets 
 import sqlite3
 
 app = Flask(__name__)
@@ -14,10 +14,10 @@ jwt_secret = os.environ.get('JWT_SECRET', 'your_jwt_secret')
 encryption_key = os.environ.get('ENCRYPTION_KEY', Fernet.generate_key().decode())
 fernet = Fernet(encryption_key.encode())
 
-# In-memory user database
+
 users = {}
 
-# --- Database Connection and Initialization --- (No changes needed here if you have it already)
+
 DATABASE_FILE = 'messages.db'
 
 def get_db_connection():
@@ -42,7 +42,7 @@ def init_db():
 
 init_db()
 
-# --- JWT Decorator --- (Modified to also check MFA)
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -55,14 +55,14 @@ def token_required(f):
         except:
             return redirect(url_for('login'))
 
-        if not session.get('mfa_verified'): # Check if MFA is verified in session
-            return redirect(url_for('mfa_verify')) # Redirect to MFA verification if not
+        if not session.get('mfa_verified'): 
+            return redirect(url_for('mfa_verify')) 
 
         return f(current_user, *args, **kwargs)
     return decorated
 
 
-# --- Routes ---
+
 
 @app.route('/', methods=['GET', 'POST'])
 def register():
@@ -89,12 +89,12 @@ def login():
             return render_template('index.html', form_type='login', message="Nieprawidłowa nazwa użytkownika lub hasło.", tailwind_cdn=True)
 
         if check_password_hash(users[username], password):
-            session.pop('mfa_verified', None) # Clear previous MFA status on new login
-            session['username_for_mfa'] = username # Store username for MFA verification
-            # Generate a simple 6-digit MFA code (INSECURE for real apps!)
+            session.pop('mfa_verified', None) 
+            session['username_for_mfa'] = username 
+            
             mfa_code = str(secrets.randbelow(1000000)).zfill(6)
-            session['mfa_code'] = mfa_code # Store MFA code in session (INSECURE for real apps!)
-            return redirect(url_for('mfa_verify')) # Redirect to MFA verification page
+            session['mfa_code'] = mfa_code 
+            return redirect(url_for('mfa_verify')) 
         else:
             return render_template('index.html', form_type='login', message="Nieprawidłowa nazwa użytkownika lub hasło.", tailwind_cdn=True)
 
@@ -104,9 +104,9 @@ def login():
 @app.route('/mfa_verify', methods=['GET', 'POST'])
 def mfa_verify():
     if request.method == 'POST':
-        username = session.get('username_for_mfa') # Get username from session
-        submitted_mfa_code = request.form['mfa_code'] # Get MFA code from form
-        stored_mfa_code = session.get('mfa_code') # Get stored MFA code
+        username = session.get('username_for_mfa') 
+        submitted_mfa_code = request.form['mfa_code'] 
+        stored_mfa_code = session.get('mfa_code') 
 
         if username and stored_mfa_code and submitted_mfa_code == stored_mfa_code:
             token = jwt.encode({
@@ -115,14 +115,14 @@ def mfa_verify():
             }, jwt_secret, algorithm='HS256')
             resp = redirect(url_for('protected'))
             resp.set_cookie('jwt_token', token, httponly=True, samesite='Strict')
-            session['mfa_verified'] = True # Set MFA verified flag in session
-            session.pop('mfa_code', None) # Remove MFA code from session after verification
-            session.pop('username_for_mfa', None) # Remove temp username
+            session['mfa_verified'] = True 
+            session.pop('mfa_code', None) 
+            session.pop('username_for_mfa', None) 
             return resp
         else:
-            return render_template('mfa_verify.html', error="Nieprawidłowy kod MFA.", mfa_code=session.get('mfa_code')) # Show error and display MFA again
+            return render_template('mfa_verify.html', error="Nieprawidłowy kod MFA.", mfa_code=session.get('mfa_code')) 
 
-    return render_template('mfa_verify.html', mfa_code=session.get('mfa_code')) # Display MFA verification form
+    return render_template('mfa_verify.html', mfa_code=session.get('mfa_code')) 
 
 
 @app.route('/protected')
@@ -192,7 +192,7 @@ def get_messages_from_db(username):
 
 @app.route('/logout')
 def logout():
-    session.pop('mfa_verified', None) # Clear MFA status on logout
+    session.pop('mfa_verified', None) 
     resp = redirect(url_for('login'))
     resp.delete_cookie('jwt_token')
     return resp
