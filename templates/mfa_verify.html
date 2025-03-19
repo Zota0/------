@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weryfikacja Dwuskładnikowa</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+
+    <div class="bg-white p-8 rounded shadow-md w-96">
+
+        <h2 class="text-2xl font-bold mb-4 text-center">Weryfikacja Dwuskładnikowa (MFA)</h2>
+        <p class="mb-4 text-center">Wprowadź kod weryfikacyjny, aby kontynuować.</p>
+
+        {% if error %}
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-2 mb-4" role="alert">
+                <p>{{ error }}</p>
+            </div>
+        {% endif %}
+
+        <div class="mb-4 p-4 border rounded bg-gray-100 text-center">
+            <p class="font-bold">Twój Kod Weryfikacyjny:</p>
+            <p class="text-xl font-mono">{{ mfa_code }}</p>  {# Display MFA code #}
+            <p class="text-sm text-gray-600">(Wprowadź ten kod poniżej)</p>
+        </div>
+
+
+        <form method="post" action="/mfa_verify">
+            <div class="mb-6">
+                <label for="mfa_code" class="block text-gray-700 text-sm font-bold mb-2">Kod Weryfikacyjny MFA:</label>
+                <input type="text" id="mfa_code" name="mfa_code" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+            <div class="flex items-center justify-center">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                    Zweryfikuj Kod MFA
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+</body>
+</html>

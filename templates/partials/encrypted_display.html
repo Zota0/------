@@ -1,0 +1,6 @@
+{% if encrypted_data %}
+    <p class="font-bold">Zaszyfrowane Dane:</p>
+    <p class="break-words">{{ encrypted_data }}</p>
+{% else %}
+    <p>No data encrypted yet.</p>
+{% endif %}
